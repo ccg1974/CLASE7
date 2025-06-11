@@ -1,0 +1,452 @@
+# Preparar datos de ejemplo
+import pandas as pd
+import os
+
+# Crear directorio si no existe
+os.makedirs('datos', exist_ok=True)
+            
+# Crear archivo CSV de ventas
+ventas_csv = """fecha,cliente,producto,cantidad,precio_unitario,total
+2024-01-15,Empresa A,Consultoría,40,150,6000
+2024-01-16,Empresa B,Análisis,20,200,4000
+2024-01-17,Empresa C,Desarrollo,60,180,10800
+2024-01-18,Empresa A,Consultoría,30,150,4500
+2024-01-19,Empresa D,Análisis,25,200,5000"""
+
+with open('datos/ventas.csv', 'w', encoding='utf-8') as f:
+    f.write(ventas_csv)
+
+   # Leer el archivo
+df_ventas = pd.read_csv('datos/ventas.csv')
+print("Datos de ventas:")
+print(df_ventas)
+
+# Definir tipos de datos específicos
+dtypes = {
+    'cliente': 'string',
+    'producto': 'string',
+    'cantidad': 'int32',
+    'precio_unitario': 'float32',
+    'total': 'float32'
+}
+
+df_ventas_typed = pd.read_csv('datos/ventas.csv', dtype=dtypes)
+print("\nTipos de datos:")
+print(df_ventas_typed.dtypes)
+
+# Parsear columnas de fecha automáticamente
+df_ventas_fechas = pd.read_csv(
+    'datos/ventas.csv',
+    parse_dates=['fecha']
+)
+
+print("\nCon fechas parseadas:")
+print(df_ventas_fechas.info())
+
+# Leer solo columnas específicas
+columnas_interes = ['fecha', 'cliente', 'total']
+df_parcial = pd.read_csv(
+    'datos/ventas.csv',
+    usecols=columnas_interes,
+    parse_dates=['fecha']
+)
+
+print("\nSolo columnas seleccionadas:")
+print(df_parcial)
+
+# Crear CSV con IDs
+proyectos_csv = """id_proyecto,nombre_proyecto,cliente,fecha_inicio,fecha_fin,presupuesto,estado
+P001,Transformación Digital,Tech Corp,2024-01-01,2024-03-31,150000,Activo
+P002,Análisis de Mercado,Finance Ltd,2024-02-01,2024-04-30,80000,Activo
+P003,Optimización Procesos,Retail SA,2023-11-01,2024-01-31,95000,Completado
+P004,Estrategia Cloud,Tech Corp,2024-03-01,2024-06-30,200000,Planificado
+P005,Due Diligence,Energy Co,2024-01-15,2024-02-28,120000,Activo"""
+
+with open('datos/proyectos.csv', 'w', encoding='utf-8') as f:
+    f.write(proyectos_csv)
+
+# Usar columna como índice
+df_proyectos = pd.read_csv(
+    'datos/proyectos.csv',
+    index_col='id_proyecto',
+    parse_dates=['fecha_inicio', 'fecha_fin']
+)
+
+print("\nProyectos con ID como índice:")
+print(df_proyectos)
+
+# Archivo con punto y coma
+empleados_csv = """id_empleado;nombre;departamento;salario;fecha_contratacion
+E001;Ana García;Consultoría;45000;2021-03-15
+E002;Carlos López;Análisis;50000;2020-07-01
+E003;María Torres;Consultoría;48000;2021-01-20
+E004;Juan Pérez;Desarrollo;55000;2019-11-10
+E005;Laura Ruiz;Análisis;52000;2020-09-05"""
+
+with open('datos/empleados.csv', 'w', encoding='utf-8') as f:
+    f.write(empleados_csv)
+
+# Leer con delimitador personalizado
+df_empleados = pd.read_csv(
+    'datos/empleados.csv',
+    sep=';',
+    parse_dates=['fecha_contratacion']
+)
+
+print("Empleados (delimitador ;):")
+print(df_empleados)
+
+# CSV con información adicional en las primeras líneas
+reporte_csv = """Reporte de Horas Facturables
+Generado: 2024-01-20
+Período: Enero 2024
+
+consultor,semana1,semana2,semana3,semana4,total
+Ana García,40,38,42,40,160
+Carlos López,45,40,43,42,170
+María Torres,38,40,39,38,155"""
+
+with open('datos/reporte_horas.csv', 'w', encoding='utf-8') as f:
+    f.write(reporte_csv)
+
+# Saltar las primeras líneas
+df_horas = pd.read_csv(
+    'datos/reporte_horas.csv',
+    skiprows=4  # Saltar las primeras 4 líneas
+)
+
+print("Reporte de horas (sin encabezado):")
+print(df_horas)
+
+# CSV con valores faltantes
+metricas_csv = """proyecto,q1,q2,q3,q4,satisfaccion_cliente
+Proyecto A,25000,30000,,35000,4.5
+Proyecto B,40000,45000,50000,55000,
+Proyecto C,,20000,22000,25000,4.2
+Proyecto D,60000,N/A,70000,75000,4.8
+Proyecto E,30000,35000,PENDING,40000,4.0"""
+
+with open('datos/metricas.csv', 'w', encoding='utf-8') as f:
+    f.write(metricas_csv)
+
+# Especificar valores que representan NA
+df_metricas = pd.read_csv(
+    'datos/metricas.csv',
+    na_values=['N/A', 'PENDING', '']
+)
+
+print("Métricas con valores faltantes:")
+print(df_metricas)
+print("\nValores nulos por columna:")
+print(df_metricas.isnull().sum())
+
+# Para archivos muy grandes, leer por chunks
+chunk_size = 2
+
+# Simular procesamiento por chunks
+chunks = []
+for chunk in pd.read_csv('datos/ventas.csv', chunksize=chunk_size):
+    # Procesar cada chunk
+    chunk_procesado = chunk[chunk['total'] > 4500]
+    chunks.append(chunk_procesado)
+
+# Combinar todos los chunks
+df_filtrado = pd.concat(chunks, ignore_index=True)
+print("\nVentas > 4500 (procesado por chunks):")
+print(df_filtrado)
+
+# CSV con caracteres especiales
+clientes_latam = """empresa,país,contacto,teléfono
+Tecnología São Paulo,Brasil,José Silva,+55-11-1234-5678
+Consultoría México,México,María González,+52-55-8765-4321
+Análisis Bogotá,Colombia,Andrés Muñoz,+57-1-9876-5432
+"""
+
+with open('datos/clientes_latam.csv', 'w', encoding='utf-8') as f:
+    f.write(clientes_latam)
+
+# Leer con encoding UTF-8
+df_clientes = pd.read_csv('datos/clientes_latam.csv', encoding='utf-8')
+print("Clientes LATAM:")
+print(df_clientes)
+
+# Función para validar datos importados
+def validar_datos_csv(df, nombre_archivo):
+    print(f"\n=== Validación de {nombre_archivo} ===")
+    print(f"Forma: {df.shape}")
+    print(f"Columnas: {list(df.columns)}")
+    print(f"\nTipos de datos:")
+    print(df.dtypes)
+    print(f"\nValores nulos:")
+    print(df.isnull().sum())
+    print(f"\nPrimeras 3 filas:")
+    print(df.head(3))
+
+# Validar datos importados
+validar_datos_csv(df_ventas, "ventas.csv")
+
+# Crear DataFrame de ejemplo
+resumen_mensual = pd.DataFrame({
+    'mes': ['Enero', 'Febrero', 'Marzo'],
+    'ingresos': [250000, 280000, 310000],
+    'gastos': [180000, 195000, 205000],
+    'utilidad': [70000, 85000, 105000]
+})
+
+# Exportar a CSV
+resumen_mensual.to_csv(
+    'datos/resumen_mensual.csv',
+    index=False,  # No incluir el índice
+    encoding='utf-8'
+)
+
+# Exportar con opciones adicionales
+resumen_mensual.to_csv(
+    'datos/resumen_mensual_formato.csv',
+    index=False,
+    sep=';',  # Usar punto y coma
+    decimal=',',  # Usar coma para decimales
+    float_format='%.2f'  # Formato de decimales
+)
+
+print("Archivos exportados exitosamente")
+
+# Instalar dependencias necesarias
+# pip install pandas openpyxl xlrd
+
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+
+# Lectura simple
+# df = pd.read_excel('archivo.xlsx')
+
+# Con hoja específica
+# df = pd.read_excel('archivo.xlsx', sheet_name='Hoja1')
+
+# Crear un archivo Excel con múltiples hojas
+with pd.ExcelWriter('datos/encuestas_satisfaccion.xlsx', engine='openpyxl') as writer:
+    # Hoja 1: Resultados
+    resultados = pd.DataFrame({
+        'cliente': ['Tech Corp', 'Finance Ltd', 'Retail SA', 'Energy Co', 'Health Inc'],
+        'proyecto': ['P001', 'P002', 'P003', 'P004', 'P005'],
+        'satisfaccion_general': [4.5, 4.2, 4.8, 3.9, 4.6],
+        'calidad_entrega': [4.6, 4.3, 4.9, 4.0, 4.5],
+        'comunicacion': [4.4, 4.1, 4.7, 3.8, 4.7],
+        'valor_precio': [4.5, 4.2, 4.8, 3.9, 4.6],
+        'fecha_encuesta': pd.date_range('2024-01-01', periods=5, freq='W')
+    })
+    resultados.to_excel(writer, sheet_name='Resultados', index=False)
+
+    # Hoja 2: Preguntas
+    preguntas = pd.DataFrame({
+        'id_pregunta': ['Q1', 'Q2', 'Q3', 'Q4'],
+        'categoria': ['General', 'Calidad', 'Comunicación', 'Valor'],
+        'pregunta': [
+            '¿Qué tan satisfecho está con el proyecto en general?',
+            '¿Cómo califica la calidad de los entregables?',
+            '¿Cómo evalúa la comunicación del equipo?',
+            '¿Considera que recibió valor por su inversión?'
+        ],
+        'escala': ['1-5', '1-5', '1-5', '1-5']
+    })
+    preguntas.to_excel(writer, sheet_name='Preguntas', index=False)
+
+print("Archivo 'encuestas_satisfaccion.xlsx' creado exitosamente")
+
+# Leer la primera hoja (por defecto)
+df_resultados = pd.read_excel('datos/encuestas_satisfaccion.xlsx')
+print("Primera hoja del archivo:")
+print(df_resultados)
+
+# Por nombre
+df_preguntas = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    sheet_name='Preguntas'
+)
+print("\nHoja 'Preguntas':")
+print(df_preguntas)
+
+# Por índice (0-based)
+df_primera_hoja = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    sheet_name=0
+)
+print("\nPrimera hoja por índice:")
+print(df_primera_hoja.head(2))
+
+# Leer todas las hojas
+todas_hojas = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    sheet_name=None  # Devuelve un diccionario
+)
+
+print("\nHojas disponibles:")
+for nombre_hoja, df in todas_hojas.items():
+    print(f"- {nombre_hoja}: {df.shape}")
+
+# Leer hojas específicas
+hojas_seleccionadas = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    sheet_name=['Resultados', 'Preguntas']
+)
+
+print("\nDatos de hojas seleccionadas:")
+for nombre, df in hojas_seleccionadas.items():
+    print(f"\n{nombre}:")
+    print(df.head(2))
+
+    # Leer solo columnas específicas
+columnas_interes = ['cliente', 'satisfaccion_general', 'fecha_encuesta']
+df_parcial = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    usecols=columnas_interes
+)
+print("\nColumnas seleccionadas:")
+print(df_parcial)
+
+# Usando índices de columnas (A, B, C...)
+df_por_letras = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    usecols='A:C,G'  # Columnas A hasta C, y G
+)
+print("\nColumnas A-C y G:")
+print(df_por_letras)
+
+# Crear Excel con formato más complejo
+tiempos_gastos_data = {
+    'Hoja Tiempos': pd.DataFrame({
+        'Semana': ['', '', 'Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+        'Proyecto': ['REPORTE DE TIEMPOS', 'Enero 2024', 'P001', 'P001', 'P002', 'P002'],
+        'Consultor': ['', '', 'Ana García', 'Ana García', 'Carlos López', 'Carlos López'],
+        'Horas_Lun': ['', '', 8, 8, 6, 7],
+        'Horas_Mar': ['', '', 8, 7, 8, 8],
+        'Horas_Mie': ['', '', 8, 8, 8, 6],
+        'Horas_Jue': ['', '', 7, 8, 7, 8],
+        'Horas_Vie': ['', '', 7, 6, 8, 7],
+        'Total': ['', '', 38, 37, 37, 36]
+    }),
+    'Hoja Gastos': pd.DataFrame({
+        'Proyecto': ['P001', 'P001', 'P002', 'P002', 'P003'],
+        'Categoria': ['Viajes', 'Software', 'Viajes', 'Consultores', 'Software'],
+        'Descripcion': ['Vuelo a cliente', 'Licencias', 'Hotel', 'Subcontratación', 'Herramientas'],
+        'Monto': [1200, 500, 800, 3000, 750],
+        'Fecha': pd.date_range('2024-01-01', periods=5, freq='W'),
+        'Aprobado': ['Sí', 'Sí', 'Sí', 'Pendiente', 'Sí']
+    })
+}
+
+with pd.ExcelWriter('datos/tiempos_gastos.xlsx', engine='openpyxl') as writer:
+    tiempos_gastos_data['Hoja Tiempos'].to_excel(
+        writer, sheet_name='Tiempos', index=False
+    )
+    tiempos_gastos_data['Hoja Gastos'].to_excel(
+        writer, sheet_name='Gastos', index=False
+    )
+
+# Leer saltando las filas de encabezado
+df_tiempos_limpio = pd.read_excel(
+    'datos/tiempos_gastos.xlsx',
+    sheet_name='Tiempos',
+    skiprows=2  # Saltar las primeras 2 filas
+)
+print("Tiempos (sin encabezado):")
+print(df_tiempos_limpio)
+
+# Especificar tipos de datos al leer
+dtype_spec = {
+    'Proyecto': 'string',
+    'Categoria': 'string',
+    'Monto': 'float64',
+    'Aprobado': 'string'
+}
+
+df_gastos = pd.read_excel(
+    'datos/tiempos_gastos.xlsx',
+    sheet_name='Gastos',
+    dtype=dtype_spec,
+    parse_dates=['Fecha']
+)
+
+print("\nGastos con tipos específicos:")
+print(df_gastos.info())
+
+# Crear Excel con celdas combinadas (simulado)
+reporte_regional = pd.DataFrame({
+    'Region': ['Norte', 'Norte', 'Norte', 'Sur', 'Sur', 'Sur'],
+    'Mes': ['Enero', 'Febrero', 'Marzo', 'Enero', 'Febrero', 'Marzo'],
+    'Ventas': [120000, 135000, 140000, 95000, 105000, 115000],
+    'Gastos': [80000, 85000, 82000, 70000, 72000, 75000],
+    'Utilidad': [40000, 50000, 58000, 25000, 33000, 40000]
+})
+
+reporte_regional.to_excel('datos/reporte_regional.xlsx', index=False)
+
+# Leer y procesar
+df_regional = pd.read_excel('datos/reporte_regional.xlsx')
+
+# Agrupar por región para manejar datos jerárquicos
+resumen_regional = df_regional.groupby('Region').agg({
+    'Ventas': 'sum',
+    'Gastos': 'sum',
+    'Utilidad': 'sum'
+})
+print("\nResumen por región:")
+print(resumen_regional)
+
+# Leer solo columnas específicas
+columnas_interes = ['cliente', 'satisfaccion_general', 'fecha_encuesta']
+df_parcial = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    usecols=columnas_interes
+)
+print("\nColumnas seleccionadas:")
+print(df_parcial)
+
+# Usando índices de columnas (A, B, C...)
+df_por_letras = pd.read_excel(
+    'datos/encuestas_satisfaccion.xlsx',
+    usecols='A:C,G'  # Columnas A hasta C, y G
+)
+print("\nColumnas A-C y G:")
+print(df_por_letras)
+
+# Crear Excel con formato más complejo
+tiempos_gastos_data = {
+    'Hoja Tiempos': pd.DataFrame({
+        'Semana': ['', '', 'Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+        'Proyecto': ['REPORTE DE TIEMPOS', 'Enero 2024', 'P001', 'P001', 'P002', 'P002'],
+        'Consultor': ['', '', 'Ana García', 'Ana García', 'Carlos López', 'Carlos López'],
+        'Horas_Lun': ['', '', 8, 8, 6, 7],
+        'Horas_Mar': ['', '', 8, 7, 8, 8],
+        'Horas_Mie': ['', '', 8, 8, 8, 6],
+        'Horas_Jue': ['', '', 7, 8, 7, 8],
+        'Horas_Vie': ['', '', 7, 6, 8, 7],
+        'Total': ['', '', 38, 37, 37, 36]
+    }),
+    'Hoja Gastos': pd.DataFrame({
+        'Proyecto': ['P001', 'P001', 'P002', 'P002', 'P003'],
+        'Categoria': ['Viajes', 'Software', 'Viajes', 'Consultores', 'Software'],
+        'Descripcion': ['Vuelo a cliente', 'Licencias', 'Hotel', 'Subcontratación', 'Herramientas'],
+        'Monto': [1200, 500, 800, 3000, 750],
+        'Fecha': pd.date_range('2024-01-01', periods=5, freq='W'),
+        'Aprobado': ['Sí', 'Sí', 'Sí', 'Pendiente', 'Sí']
+    })
+}
+
+with pd.ExcelWriter('datos/tiempos_gastos.xlsx', engine='openpyxl') as writer:
+    tiempos_gastos_data['Hoja Tiempos'].to_excel(
+        writer, sheet_name='Tiempos', index=False
+    )
+    tiempos_gastos_data['Hoja Gastos'].to_excel(
+        writer, sheet_name='Gastos', index=False
+    )
+
+# Leer saltando las filas de encabezado
+df_tiempos_limpio = pd.read_excel(
+    'datos/tiempos_gastos.xlsx',
+    sheet_name='Tiempos',
+    skiprows=2  # Saltar las primeras 2 filas
+)
+print("Tiempos (sin encabezado):")
+print(df_tiempos_limpio)
