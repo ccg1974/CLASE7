@@ -85,3 +85,4 @@ with open('datos/ventas.csv', 'w', encoding='utf-8') as f:
 df_ventas = pd.read_csv('datos/ventas.csv')
 print("Datos de ventas:")
 print(df_ventas)
+#prueba
